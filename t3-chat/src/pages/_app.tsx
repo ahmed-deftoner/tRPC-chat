@@ -6,6 +6,9 @@ import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
 import "../styles/globals.css";
 
+import { createWSClient, wsLink } from "@trpc/client/links/wsLink";
+import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
+
 const MyApp: AppType = ({
   Component,
   pageProps: { session, ...pageProps },
@@ -26,21 +29,49 @@ const getBaseUrl = () => {
   return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
 };
 
+const url = `${getBaseUrl()}/api/trpc`;
+
+function getEndingLink() {
+  if (typeof window === "undefined") {
+    return httpBatchLink({
+      url,
+    });
+  }
+
+  const client = createWSClient({
+    url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001",
+  });
+
+  return wsLink<AppRouter>({
+    client,
+  });
+}
+
+
 export default withTRPC<AppRouter>({
   config({ ctx }) {
     /**
      * If you want to use SSR, you need to use the server's full URL
      * @link https://trpc.io/docs/ssr
      */
-    const url = `${getBaseUrl()}/api/trpc`;
 
     return {
-      url,
+      links:[
+        getEndingLink(),
+      ],
       transformer: superjson,
       /**
        * @link https://react-query.tanstack.com/reference/QueryClient
        */
       // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      headers: () => {
+        if (ctx?.req) {
+          return {
+            ...ctx.req.headers,
+          };
+        }
+        return {};
+      },
     };
   },
   /**
