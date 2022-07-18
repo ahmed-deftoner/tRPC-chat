@@ -20,10 +20,7 @@ export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    }),
+   
     // ...add more providers here
     CredentialsProvider({
       name: "Credentials",
@@ -40,6 +37,10 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET,
+  session:{
+    strategy:'jwt'
+  }
 };
 
 export default NextAuth(authOptions);
