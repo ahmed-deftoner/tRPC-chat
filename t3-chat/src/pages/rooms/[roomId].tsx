@@ -40,7 +40,35 @@ function RoomPage(){
         );
       }
 
-    return <div>welcome to room {roomId}</div>
+      return (
+        
+    
+          <form
+            className="flex"
+            onSubmit={(e) => {
+              console.log("submity");
+              e.preventDefault();
+    
+              sendMessageMutation({
+                roomId,
+                message,
+              });
+    
+              setMessage("");
+            }}
+          >
+            <textarea
+              className="black p-2.5 w-full text-gray-700 bg-gray-50 rounded-md border border-gray-700"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="What do you want to say"
+            />
+    
+            <button className="flex-1 text-white bg-gray-900 p-2.5" type="submit">
+              Send message
+            </button>
+          </form>
+      );
 
 }
 
