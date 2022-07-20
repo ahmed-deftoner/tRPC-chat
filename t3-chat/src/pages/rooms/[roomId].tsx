@@ -1,10 +1,43 @@
+import { Session } from "next-auth";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Message } from "../../constants/schemas";
 import { trpc } from "../../utils/trpc";
 
+function MessageItem({
+    message,
+    session,
+  }: {
+    message: Message;
+    session: Session;
+  }) {
+    const baseStyles =
+      "mb-4 text-md w-7/12 p-4 text-gray-700 border border-gray-700 rounded-md";
+  
+    const liStyles =
+      message.sender.name === session.user?.name
+        ? baseStyles
+        : baseStyles.concat(" self-end bg-gray-700 text-white");
+  
+    return (
+      <li className={liStyles}>
+        <div className="flex">
+          <time>
+            {message.sentAt.toLocaleTimeString("en-AU", {
+              timeStyle: "short",
+            })}{" "}
+            - {message.sender.name}
+          </time>
+        </div>
+        {message.message}
+      </li>
+    );
+  }
+  
+
 function RoomPage(){
+
     const { query } = useRouter();
     const roomId = query.roomId as string;
     const { data: session } = useSession();
@@ -41,7 +74,14 @@ function RoomPage(){
       }
 
       return (
-        
+        <div className="flex flex-col h-screen">
+          <div className="flex-1">
+            <ul className="flex flex-col p-4">
+              {messages.map((m) => {
+                return <MessageItem key={m.id} message={m} session={session} />;
+              })}
+            </ul>
+          </div>
     
           <form
             className="flex"
@@ -68,6 +108,7 @@ function RoomPage(){
               Send message
             </button>
           </form>
+        </div>
       );
 
 }
